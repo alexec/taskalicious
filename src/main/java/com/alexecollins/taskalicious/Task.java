@@ -4,6 +4,8 @@ package com.alexecollins.taskalicious;
 import java.util.Date;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author alexec (alex.e.c@gmail.com)
@@ -21,6 +23,10 @@ public class Task {
 
 	}
 
+	public Date getDue() {
+		return due;
+	}
+
 	public enum State {PENDING,COMPLETE,DECLINED}
 	private final Set<TaskListener> listeners = new CopyOnWriteArraySet<TaskListener>();
 	private final String creator;
@@ -35,11 +41,30 @@ public class Task {
 	}
 
 	public static Task of(String creator, String text) {
+
+		final Pattern p = Pattern.compile("(.*) (due|by|on) (.*)");
+		final Matcher m = p.matcher(text);
+		if (m.find()) {
+			final Date parse = TimeUtil.parse(m.group(3));
+			if (parse != null) {
+				return new Task(creator, parse, m.group(1));
+			}
+		}
+
 		return new Task(creator, null, text);
 	}
 
 	public String getText() {
 		return text;
+	}
+
+	public boolean isOverdue() {
+		return due != null && due.getTime() < System.currentTimeMillis();
+	}
+
+	@Override
+	public String toString() {
+		return text + (due != null ? (" (due " + due + ")") : "") + " created by " + creator;
 	}
 
 	public interface TaskListener {void update(Task task);}

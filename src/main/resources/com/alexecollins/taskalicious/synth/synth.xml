@@ -8,6 +8,8 @@
     <object class="javax.swing.plaf.ColorUIResource" id="focus"><int>100</int><int>100</int><int>200</int></object>
     <object class="javax.swing.plaf.ColorUIResource" id="primaryfg"><int>0</int><int>0</int><int>0</int></object>
     <object class="javax.swing.plaf.ColorUIResource" id="primarybg"><int>100</int><int>100</int><int>255</int></object>
+    <object class="javax.swing.plaf.ColorUIResource" id="fglight"><int>127</int><int>127</int><int>127</int></object>
+    <object class="javax.swing.plaf.ColorUIResource" id="fgoverdue"><int>255</int><int>63</int><int>63</int></object>
 
     <!-- A custom painter allows us to finely control the look of components. -->
     <object id="painter" class="com.alexecollins.taskalicious.synth.CustomPainter"/>
@@ -181,10 +183,26 @@
         <insets left="0" top="0" right="0" bottom="2"/>
     </style>
     <bind style="tasksPanel" type="name" key="tasksPanel"/>
+
     <style id="taskPanel">
         <insets left="0" top="0" right="0" bottom="2"/>
     </style>
     <bind style="tasksPanel" type="name" key="tasksPanel"/>
+
+    <style id="due">
+        <font name="Book Antiqua" size="9"/>
+        <state>
+            <color type="FOREGROUND" idref="fglight"/>
+        </state>
+    </style>
+    <bind style="due" type="name" key="due"/>
+    <style id="overdue">
+        <font name="Book Antiqua" size="9"/>
+        <state>
+            <color type="FOREGROUND" idref="fgoverdue"/>
+        </state>
+    </style>
+    <bind style="overdue" type="name" key="overdue"/>
 
     <style id="primary">
         <state>

@@ -103,13 +103,14 @@ public class TaskaliciousFrame extends JFrame {
 	}
 
 	private class TaskPanel extends JPanel implements Task.TaskListener {
-		private final JLabel label = new JLabel();
 		private final JCheckBox box = new JCheckBox();
+		private final JLabel text = new JLabel();
+		private final JLabel due = new JLabel();
 
 		public TaskPanel(final Task task) {
 			setLayout(new BorderLayout());
 			setName("taskPanel");
-			setMaximumSize(new Dimension(300,40));
+			setMaximumSize(new Dimension(330,40));
 			add(box, BorderLayout.WEST);
 			box.addActionListener(new ActionListener() {
 				@Override
@@ -117,7 +118,8 @@ public class TaskaliciousFrame extends JFrame {
 					task.setState(box.isSelected() ? Task.State.COMPLETE : Task.State.PENDING);
 				}
 			});
-			add(label);
+			add(text);
+			add(due, BorderLayout.EAST);
 			update(task);
 			task.addListener(this);
 		}
@@ -125,7 +127,12 @@ public class TaskaliciousFrame extends JFrame {
 		@Override
 		public void update(Task task) {
 			box.setSelected(task.getState() != Task.State.PENDING);
-			label.setText(task.getText());
+			text.setText(task.getText());
+			if (task.getDue() != null) {
+				due.setText(TimeUtil.format(task.getDue()));
+			}
+			due.setVisible(task.getDue() != null);
+			due.setName(task.isOverdue() ? "overdue" : "due");
 			TaskaliciousFrame.this.repaint();
 		}
 	}
