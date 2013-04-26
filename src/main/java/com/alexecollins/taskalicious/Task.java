@@ -13,6 +13,14 @@ public class Task {
 		return state;
 	}
 
+	public void setState(State state) {
+		this.state = state;
+		for (TaskListener listener:listeners) {
+			listener.update(this);
+		}
+
+	}
+
 	public enum State {PENDING,COMPLETE,DECLINED}
 	private final Set<TaskListener> listeners = new CopyOnWriteArraySet<TaskListener>();
 	private final String creator;

@@ -103,6 +103,9 @@
     <style id="combobox"><painter method="comboBoxBackground" idref="painter"/></style>
     <bind style="combobox" type="region" key="ComboBox"/>
 
+    <style id="label"><insets left="5" top="1" bottom="1"/> </style>
+    <bind style="label" type="region" key="Label"/>
+
     <style id="checkbox">
         <object id="checkOff" class="com.alexecollins.taskalicious.synth.CheckBoxOffIcon"><int>16</int></object>
         <object id="checkOn" class="com.alexecollins.taskalicious.synth.CheckBoxOnIcon"><int>16</int></object>
@@ -174,6 +177,14 @@
         <insets bottom="27" left="30" right="27" top="55"/>
     </style>
     <bind style="page" type="name" key="page"/>
+    <style id="tasksPanel">
+        <insets left="0" top="0" right="0" bottom="2"/>
+    </style>
+    <bind style="tasksPanel" type="name" key="tasksPanel"/>
+    <style id="taskPanel">
+        <insets left="0" top="0" right="0" bottom="2"/>
+    </style>
+    <bind style="tasksPanel" type="name" key="tasksPanel"/>
 
     <style id="primary">
         <state>
