@@ -1,0 +1,189 @@
+<!--
+    http://docs.oracle.com/javase/6/docs/api/javax/swing/plaf/synth/doc-files/synth.dtd
+    http://docs.oracle.com/javase/6/docs/api/javax/swing/plaf/synth/doc-files/componentProperties.html
+-->
+<synth>
+    <object class="javax.swing.plaf.ColorUIResource" id="fg"><int>0</int><int>0</int><int>0</int></object>
+    <object class="javax.swing.plaf.ColorUIResource" id="bg"><int>255</int><int>255</int><int>255</int></object>
+    <object class="javax.swing.plaf.ColorUIResource" id="focus"><int>100</int><int>100</int><int>200</int></object>
+    <object class="javax.swing.plaf.ColorUIResource" id="primaryfg"><int>0</int><int>0</int><int>0</int></object>
+    <object class="javax.swing.plaf.ColorUIResource" id="primarybg"><int>100</int><int>100</int><int>255</int></object>
+
+    <!-- A custom painter allows us to finely control the look of components. -->
+    <object id="painter" class="com.alexecollins.taskalicious.synth.CustomPainter"/>
+
+    <!-- A number of synth components will throw a NullPointerException of you do not provide defaults. -->
+    <style id="default">
+        <opaque value="false"/>
+        <!-- A handy list of fonts that you can use: http://www.ampsoft.net/webdesign-l/WindowsMacFonts.html -->
+        <font name="Book Antiqua" size="12"/>
+        <state>
+            <color type="FOREGROUND" idref="fg"/>
+            <color type="TEXT_BACKGROUND" idref="bg"/>
+            <!-- The color used in highlighting components. -->
+            <color type="FOCUS" idref="focus"/>
+        </state>
+    </style>
+    <bind style="default" type="region" key=".*"/>
+
+    <style id="padding">
+        <insets top="5" right="5" bottom="5" left="5"/>
+    </style>
+    <bind style="padding" type="region" key="Button"/>
+    <bind style="padding" type="region" key="ComboBox"/>
+    <bind style="padding" type="region" key="PasswordField"/>
+    <bind style="padding" type="region" key="TextField"/>
+    <bind style="padding" type="region" key="EditorPane"/>
+    <bind style="padding" type="region" key="TextArea"/>
+    <bind style="padding" type="region" key="List"/>
+    <bind style="padding" type="region" key="Tree"/>
+    <bind style="padding" type="region" key="OptionPane"/>
+    <bind style="padding" type="region" key="MenuBar"/>
+    <bind style="padding" type="region" key="MenuItem"/>
+
+    <style id="panel">
+        <painter method="panelBackground" idref="painter"/>
+        <state>
+            <color type="BACKGROUND" idref="bg"/>
+        </state>
+    </style>
+    <bind style="panel" type="region" key="Panel"/>
+
+    <style id="hover">
+        <state value="MOUSE_OVER">
+            <color idref="focus" type="FOREGROUND"/>
+        </state>
+    </style>
+    <bind style="hover" type="region" key="Button"/>
+    <bind style="hover" type="region" key="ComboBox"/>
+    <bind style="hover" type="region" key="CheckBox"/>
+    <bind style="hover" type="region" key="RadioButton"/>
+
+    <!-- Many components are composite, and in the XML, ordering is important, this needs to be before
+     textfield -->
+    <style id="colorchooser">
+        <property key="ColorChooser.swatchesDefaultRecentColor" type="idref" value="fg"/>
+        <property key="ColorChooser.swatchesSwatchSize" type="dimension" value="10 10"/>
+        <property key="ColorChooser.swatchesRecentSwatchSize" type="dimension" value="10 10"/>
+    </style>
+    <bind style="colorchooser" type="region" key="ColorChooser"/>
+
+    <style id="textfield"><painter method="textFieldBackground" idref="painter"/></style>
+    <bind style="textfield" type="region" key="TextField"/>
+
+    <style id="passwordfield"><painter method="passwordFieldBackground" idref="painter"/></style>
+    <bind style="passwordfield" type="region" key="PasswordField"/>
+
+    <style id="textarea"><painter method="textAreaBackground" idref="painter"/></style>
+    <bind style="textarea" type="region" key="TextArea"/>
+
+    <style id="editorpane"><opaque value="true"/>
+        <painter method="textEditorPaneBackground" idref="painter"/></style>
+    <bind style="editorpane" type="region" key="EditorPane"/>
+
+    <style id="toolBar"><painter idref="painter" method="toolBarBackground"/>
+        <insets bottom="2" left="2" right="2" top="2"/></style>
+    <bind style="toolBar" type="region" key="ToolBar"/>
+
+    <style id="tooltip" clone="default">
+        <insets top="5" left="5" bottom="5" right="5" />
+    </style>
+    <bind style="tooltip" type="region" key="ToolTip" />
+
+    <style id="list"><painter method="listBackground" idref="painter"/>
+        <state><color type="TEXT_BACKGROUND" idref="focus"/></state></style>
+    <bind style="list" type="region" key="List"/>
+
+    <style id="spinner"><painter method="spinnerBackground" idref="painter"/></style>
+    <bind style="spinner" type="region" key="Spinner"/>
+
+    <style id="button"><painter method="buttonBackground" idref="painter"/></style>
+    <bind style="button" type="region" key="Button"/>
+
+    <style id="combobox"><painter method="comboBoxBackground" idref="painter"/></style>
+    <bind style="combobox" type="region" key="ComboBox"/>
+
+    <style id="checkbox">
+        <object id="checkOff" class="com.alexecollins.taskalicious.synth.CheckBoxOffIcon"><int>16</int></object>
+        <object id="checkOn" class="com.alexecollins.taskalicious.synth.CheckBoxOnIcon"><int>16</int></object>
+        <property key="CheckBox.icon" type="idref" value="checkOff"/>
+        <state value="SELECTED"><property key="CheckBox.icon" type="idref" value="checkOn"/></state>
+    </style>
+    <bind style="checkbox" type="region" key="CheckBox"/>
+
+    <style id="radiobutton">
+        <object id="radioOff" class="com.alexecollins.taskalicious.synth.RadioButtonOffIcon"><int>16</int></object>
+        <object id="radioOn" class="com.alexecollins.taskalicious.synth.RadioButtonOnIcon"><int>16</int></object>
+        <property key="RadioButton.icon" type="idref" value="radioOff"/>
+        <state value="SELECTED"><property key="RadioButton.icon" type="idref" value="radioOn"/></state>
+    </style>
+    <bind style="radiobutton" type="region" key="RadioButton"/>
+
+    <style id="progressbar"><painter method="progressBarBackground" idref="painter"/>
+        <insets top="0" bottom="0" left="5" right="5"/> </style>
+    <bind style="progressbar" type="region" key="ProgressBar"/>
+
+    <!-- http://www.javalobby.org/java/forums/t49282.html -->
+    <style id="scrollBarArrowStyle"><property key="ArrowButton.size" type="integer" value="0" /></style>
+    <bind style="scrollBarArrowStyle" type="REGION" key="ArrowButton" />
+
+    <style id="scrollBarThumbStyle"><painter method="scrollBarThumbBackground" idref="painter"/></style>
+    <bind style="scrollBarThumbStyle" type="REGION" key="ScrollBarThumb" />
+
+    <style id="scrollbarTrackStyle">
+        <opaque value="true"/>
+        <state>
+            <insets top="1" right="1" bottom="1" left="1"/>
+            <color idref="bg" type="BACKGROUND"/>
+        </state>
+    </style>
+    <bind style="scrollbarTrackStyle" type="REGION" key="ScrollBarTrack" />
+
+    <style id="menuBar">
+        <opaque value="true" />
+        <state value="MOUSE_OVER">
+            <color idref="focus" type="BACKGROUND"/>
+        </state>
+    </style>
+    <bind style="menuBar" type="region" key="MenuBar" />
+    <style id="menu">
+        <opaque value="true" />
+        <state value="MOUSE_OVER">
+            <color idref="focus" type="BACKGROUND"/>
+        </state>
+    </style>
+    <bind style="menu" type="region" key="Menu" />
+    <style id="menuItem">
+        <opaque value="true" />
+        <state value="MOUSE_OVER">
+            <color idref="focus" type="BACKGROUND"/>
+        </state>
+    </style>
+    <bind style="menuItem" type="region" key="MenuItem" />
+
+    <style id="title">
+        <font name="Lucida Sans Unicode" size="32" style="bold"/>
+    </style>
+    <bind style="title" type="name" key="title"/>
+
+    <style id="page">
+        <font name="Book Antiqua" size="22"/>
+        <state>
+            <color type="BACKGROUND" idref="bg"/>
+        </state>
+        <insets bottom="27" left="30" right="27" top="55"/>
+    </style>
+    <bind style="page" type="name" key="page"/>
+
+    <style id="primary">
+        <state>
+            <color type="FOREGROUND" idref="primaryfg"/>
+            <color type="BACKGROUND" idref="primarybg"/>
+            <color type="TEXT_FOREGROUND" idref="bg"/>
+            <state value="MOUSE_OVER">
+                <color type="FOREGROUND" idref="focus"/>
+            </state>
+        </state>
+    </style>
+    <bind style="primary" type="name" key="primary"/>
+</synth>
