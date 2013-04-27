@@ -23,12 +23,15 @@ public class Peers extends AbstractMap<User,Peer> {
 
 	@Override
 	public Peer put(User user, Peer peer) {
-		Peer put = map.put(user, peer);
+		if (!map.containsKey(user)) {
+			Peer put = map.put(user, peer);
 
-		bus.post(new PeerAddedEvent(user,peer));
-		log.debug("added " + user + " -> " + peer);
+			bus.post(new PeerAddedEvent(user,peer));
+			log.debug("added " + user + " -> " + peer);
+			return put;
+		}
 
-		return put;
+		return null ;
 	}
 
 	@Override

@@ -1,13 +1,16 @@
 package com.alexecollins.taskalicious;
 
+import lombok.Data;
+
 /**
  * @author alexec (alex.e.c@gmail.com)
  */
+@Data
 public class User {
 	private final String name;
 
-	private User(String name) {
-		if (name == null) {throw new IllegalArgumentException();}
+	public User(String name) {
+		if (name == null || !name.trim().equals(name)) {throw new IllegalArgumentException("name null or trailing whitespace");}
 		this.name = name;
 	}
 
@@ -16,23 +19,7 @@ public class User {
 	}
 
 	@Override
-	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
-
-		User user = (User) o;
-
-		if (!name.equals(user.name)) return false;
-
-		return true;
-	}
-
-	@Override
-	public int hashCode() {
-		return name.hashCode();
-	}
-
-	public String getName() {
+	public String toString() {
 		return name;
 	}
 }

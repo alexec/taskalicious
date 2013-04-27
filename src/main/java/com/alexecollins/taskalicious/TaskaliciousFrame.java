@@ -1,5 +1,6 @@
 package com.alexecollins.taskalicious;
 
+import com.alexecollins.taskalicious.events.PeerDiscovered;
 import com.alexecollins.taskalicious.events.TaskAddedEvent;
 import com.alexecollins.taskalicious.events.TaskRemovedEvent;
 import com.google.common.eventbus.EventBus;
@@ -24,7 +25,7 @@ public class TaskaliciousFrame extends JFrame {
 	private final EventBus bus = new EventBus();
 	private final Tasks tasks = new Tasks(bus);
 	private final Image background;
-	private final User user = User.named(System.getProperty("user.name"));
+	private final User user = User.named(System.getProperty("user", System.getProperty("user.name")));
 	private final Peer me  = Peer.me();
 	private final Peers peers = new Peers(bus);
 	{
@@ -48,6 +49,7 @@ public class TaskaliciousFrame extends JFrame {
 		trayIcon = new TrayIcon(Toolkit.getDefaultToolkit().createImage("trayIcon.png"), getTitle(), new PopupMenu());
 		tray.add(trayIcon);
 		bus.register(this);
+		world.start();
 	}
 
 	public class ContentPanel extends JPanel {
@@ -100,7 +102,11 @@ public class TaskaliciousFrame extends JFrame {
 					switch (keyEvent.getKeyCode()) {
 						case 10:
 							if (t.getText().length() > 0) {
-								tasks.addTask(Task.of(user, t.getText()));
+								try {
+									tasks.addTask(Task.of(user, "- " + t.getText()));
+								} catch (Exception e) {
+									bus.post(e);
+								}
 								t.setText("");
 							}
 							break;
@@ -163,12 +169,12 @@ public class TaskaliciousFrame extends JFrame {
 			text.addFocusListener(new FocusAdapter() {
 				@Override
 				public void focusGained(FocusEvent focusEvent) {
-					text.setText(task.toString());
+					text.setText(task.toString().substring(2));
 				}
 
 				@Override
 				public void focusLost(FocusEvent focusEvent) {
-					task.fromString(text.getText());
+					task.fromString("- " + text.getText());
 				}
 			});
 			text.addKeyListener(new KeyAdapter() {
@@ -235,10 +241,11 @@ public class TaskaliciousFrame extends JFrame {
 						@Override
 						public void run() {
 							try {
-								Peer p = Peer.of(JOptionPane.showInputDialog(TaskaliciousFrame.this, "Enter peer, e.g. 192.168.1.70:" + Peer.DEFAULTS_PORT));
+								Peer p = Peer.of(JOptionPane.showInputDialog(TaskaliciousFrame.this, "Enter peer, e.g. 192.168.1.70:" + Peer.DEFAULTS_PORT, "localhost:10000"));
 								peers.put(world.whoAreYou(p), p);
 							} catch (Exception e) {
-								JOptionPane.showMessageDialog(TaskaliciousFrame.this, e, "Failed to add peer: " + e, JOptionPane.ERROR_MESSAGE);
+								TaskaliciousFrame.log.error("ops", e);
+								JOptionPane.showMessageDialog(TaskaliciousFrame.this, "Failed to add peer: " + e, "Error", JOptionPane.ERROR_MESSAGE);
 							}
 						}
 					});
@@ -253,5 +260,10 @@ public class TaskaliciousFrame extends JFrame {
 	public void exception(Exception e) {
 		log.error("uncaught", e);
 		trayIcon.displayMessage("Error", e.toString(), TrayIcon.MessageType.ERROR);
+	}
+
+	@Subscribe
+	public void peerDiscovered(PeerDiscovered e) {
+		trayIcon.displayMessage("New peer", e.getUser().getName() + " discovered", TrayIcon.MessageType.INFO);
 	}
 }

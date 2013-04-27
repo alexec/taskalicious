@@ -45,7 +45,6 @@ public class Task {
 
 	Task(User creator, String s) {
 		if (creator == null) {throw new IllegalArgumentException("null creator");}
-		if (s == null) {throw new IllegalArgumentException("null s");}
 		this.creator = creator;
 		fromString(s);
 	}
@@ -55,7 +54,17 @@ public class Task {
 	}
 
 	public void fromString(String s) {
+		if (s == null) {throw new IllegalArgumentException("null string");}
 		owner = creator;
+		{
+			final Pattern p = Pattern.compile("([-x]) (.*)");
+			Matcher m = p.matcher(s);
+			if (!m.find()) {
+				throw new IllegalArgumentException("string invalid, must start with - or x");
+			}
+			state = m.group(1).equals("-") ? State.PENDING : State.COMPLETE;
+			s = m.group(2);
+		}
 		{
 			final Pattern p = Pattern.compile("(.*) - (.*)");
 			final Matcher m = p.matcher(s);
@@ -88,7 +97,8 @@ public class Task {
 
 	@Override
 	public String toString() {
-		return text + (due != null ? (" due " + TimeUtil.format(due)) : "");
+		return state == State.COMPLETE ? "x" : "-" + " " + text + (due != null ? (" due " + TimeUtil.format(due)) : "")
+				+ (!owner.equals(creator) ? " - " + owner : "");
 	}
 
 	public interface TaskListener {void update(Task task);}

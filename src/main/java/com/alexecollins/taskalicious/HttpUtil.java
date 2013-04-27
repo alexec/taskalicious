@@ -1,5 +1,6 @@
 package com.alexecollins.taskalicious;
 
+import com.sun.net.httpserver.HttpExchange;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.BufferedReader;
@@ -7,6 +8,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author alexec (alex.e.c@gmail.com)
@@ -33,5 +38,19 @@ public class HttpUtil {
 		}
 		log.info(" -> " + out.toString());
 		return out.toString();
+	}
+
+	public static Map<String, String> argsOf(HttpExchange e) {
+		return argsOf(e.getRequestURI().getQuery());
+	}
+
+	static Map<String, String> argsOf(String s) {
+		HashMap<String, String> map = new HashMap<String, String>();
+
+		Matcher m = Pattern.compile("([^=]*)=([^&]*)(?:&|$)").matcher(s);
+		while (m.find()) {
+			map.put(m.group(1), m.group(2));
+		}
+		return map;
 	}
 }
