@@ -65,7 +65,7 @@ public class Task {
 			}
 		}
 		{
-			final Pattern p = Pattern.compile("(.*?) ((?:due|by|on)? .*)");
+			final Pattern p = Pattern.compile("(.*?) ((?:due|by|on|at|before)? .*)");
 			final Matcher m = p.matcher(s);
 			if (m.find()) {
 				due = TimeUtil.parse(m.group(2));

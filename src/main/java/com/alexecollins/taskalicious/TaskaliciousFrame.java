@@ -1,11 +1,15 @@
 package com.alexecollins.taskalicious;
 
+import com.alexecollins.taskalicious.events.TaskAddedEvent;
+import com.alexecollins.taskalicious.events.TaskRemovedEvent;
+import com.google.common.eventbus.EventBus;
+import com.google.common.eventbus.Subscribe;
+
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,9 +19,17 @@ import java.util.Map;
  */
 public class TaskaliciousFrame extends JFrame {
 
-	private final Repo repo = new Repo();
+	private final EventBus bus = new EventBus();
+	private final Tasks tasks = new Tasks(bus);
 	private final Image background;
 	private final User user = User.named(System.getProperty("user.name"));
+	private final Peer me  = Peer.me();
+	private final Peers peers = new Peers(bus);
+	{
+		peers.put(user, me);
+	}
+
+	private final World world = new World(peers, user,  bus);
 
 	public TaskaliciousFrame() throws IOException {
 		setLayout(new BorderLayout());
@@ -49,14 +61,15 @@ public class TaskaliciousFrame extends JFrame {
 		}
 	}
 
-	private class TasksPanel extends JPanel implements Repo.RepoListener {
+	private class TasksPanel extends JPanel {
 		final Map<Task,TaskPanel> taskTaskPanelMap = new HashMap<Task, TaskPanel>();
 
 		TasksPanel() {
 			setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 
-			for (Task task : repo.findTasksByOwner(user)) {
-				added(repo, task);
+			bus.register(this);
+			for (Task task : tasks.findTasksByOwner(user)) {
+				added(task);
 			}
 
 			final JTextField t = new JTextField("new task...");
@@ -79,7 +92,7 @@ public class TaskaliciousFrame extends JFrame {
 					switch (keyEvent.getKeyCode()) {
 						case 10:
 							if (t.getText().length() > 0) {
-								repo.addTask(Task.of(user, t.getText()));
+								tasks.addTask(Task.of(user, t.getText()));
 								t.setText("");
 							}
 							break;
@@ -91,11 +104,13 @@ public class TaskaliciousFrame extends JFrame {
 			});
 			add(t);
 
-			repo.addListener(this);
+		}
+		@Subscribe
+		public void taskAdded(TaskAddedEvent e) {
+			added(e.getTask());
 		}
 
-		@Override
-		public void added(Repo repo, Task task) {
+		public void added(Task task) {
 			if (task.getOwner().equals(user)) {
 				TaskPanel p = new TaskPanel(task);
 				taskTaskPanelMap.put(task,p);
@@ -108,8 +123,9 @@ public class TaskaliciousFrame extends JFrame {
 			}
 		}
 
-		@Override
-		public void removed(Repo repo, Task task) {
+		@Subscribe
+		public void taskRemoved(TaskRemovedEvent e) {
+			Task task = e.getTask();
 			if (taskTaskPanelMap.containsKey(task)) {
 				TaskPanel p = taskTaskPanelMap.remove(task);
 				p.getParent().remove(p);
@@ -156,7 +172,7 @@ public class TaskaliciousFrame extends JFrame {
 					switch (keyEvent.getKeyCode()) {
 						case 8:
 							if (text.getText().length() == 0) {
-								repo.remove(task);
+								tasks.remove(task);
 							}
 							break;
 						case 38:
@@ -200,9 +216,28 @@ public class TaskaliciousFrame extends JFrame {
 			l.setName("grey");
 			add(l);
 			add(Box.createHorizontalGlue());
-			JLabel l2 = new JLabel(InetAddress.getLocalHost().getHostName());
+			JLabel l2 = new JLabel(me.toString());
 			l2.setName("grey");
 			add(l2);
+			JButton b = new JButton("+");
+			b.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent actionEvent) {
+					SwingUtilities.invokeLater(new Runnable() {
+						@Override
+						public void run() {
+							try {
+								Peer p = Peer.of(JOptionPane.showInputDialog(TaskaliciousFrame.this, "Enter peer, e.g. 192.168.1.70:" + Peer.DEFAULTS_PORT));
+								peers.put(world.whoAreYou(p), p);
+							} catch (Exception e) {
+								JOptionPane.showMessageDialog(TaskaliciousFrame.this, e, "Failed to add peer: " + e, JOptionPane.ERROR_MESSAGE);
+							}
+						}
+					});
+				}
+			});
+			add(b);
+
 		}
 	}
 }
