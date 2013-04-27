@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 /**
  * @author alexec (alex.e.c@gmail.com)
  */
-public class TimeUtil {
+public class TimeUtils {
 
 	private static final PrettyTime prettyTime = new PrettyTime();
 

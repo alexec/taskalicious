@@ -17,26 +17,27 @@ import java.util.regex.Pattern;
  * @author alexec (alex.e.c@gmail.com)
  */
 @Slf4j
-public class HttpUtil {
+public class HttpUtils {
 	public static String get(URI uri) throws IOException {
-		log.info("requesting " + uri);
-		StringBuilder out = null;
+		HttpUtils.log.info("requesting " + uri);
+		StringBuilder 			out = new StringBuilder();
+
 		HttpURLConnection con = (HttpURLConnection) uri.toURL().openConnection();
 		try {
+			con.setDoInput(true);
 			con.connect();
 			String l;
 			BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-			out = new StringBuilder();
 			while ((l = in.readLine()) != null) {
 				out.append(l).append('\n');
 			}
 		} catch (IOException e) {
-			log.error("failed " + e, e);
+			HttpUtils.log.error("failed " + e, e);
 			throw e;
 		} finally {
 			con.disconnect();
 		}
-		log.info(" -> " + out.toString());
+		HttpUtils.log.info(" -> " + out.toString());
 		return out.toString();
 	}
 

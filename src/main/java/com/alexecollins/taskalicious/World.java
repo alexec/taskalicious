@@ -1,8 +1,6 @@
 package com.alexecollins.taskalicious;
 
-import com.alexecollins.taskalicious.events.PeerAddedEvent;
-import com.alexecollins.taskalicious.events.PeerDiscovered;
-import com.alexecollins.taskalicious.events.TaskAddedEvent;
+import com.alexecollins.taskalicious.events.*;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Collections2;
@@ -19,6 +17,8 @@ import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.Map;
+
+import static com.alexecollins.taskalicious.HttpUtils.argsOf;
 
 /**
  * @author alexec (alex.e.c@gmail.com)
@@ -60,6 +60,19 @@ public class World  {
 				})));
 			}
 		});
+		server.createContext("/addTask", new HttpHandler() {
+			@Override
+			public void handle(HttpExchange e) throws IOException {
+				Map<String, String> args = argsOf(e);
+				World.log.info("discovered task " + args);
+				try {
+					bus.post(new TaskDiscovered(Task.of(bus, User.named(args.get("creator")), args.get("task"))));
+				} catch (Exception e1) {
+					bus.post(e1);
+				}
+				reply(e, "");
+			}
+		});
 		server.start();
 		log.info("listening at " + address);
 
@@ -79,6 +92,7 @@ public class World  {
 	}
 
 	private void reply(HttpExchange e, String body) throws IOException {
+		World.log.info("replying " + body);
 		PrintWriter out = new PrintWriter(e.getResponseBody());
 		e.sendResponseHeaders(HttpURLConnection.HTTP_OK, body.length());
 		out.print(body);
@@ -91,7 +105,7 @@ public class World  {
 	}
 
 	private String get(Peer peer, String string) throws IOException {
-		return HttpUtil.get(URI.create("http://" + peer.getHostName() + ":" + peer.getPort() + string));
+		return HttpUtils.get(URI.create("http://" + peer.getHostName() + ":" + peer.getPort() + string));
 	}
 
 	@Subscribe
@@ -109,9 +123,15 @@ public class World  {
 
 	@Subscribe
 	public void taskAdded(TaskAddedEvent e) {
-		if (e.getTask().getOwner() != me) {
+		if (!e.getTask().getOwner().equals(me)) {
 			try {
-				get(peers.get(e.getTask().getOwner()), "/addTask?task=" + e.getTask());
+				log.info("sending task to peer");
+				Peer peer = peers.get(e.getTask().getOwner());
+				if (peer == null) {
+					bus.post(new PeerUnavailable(peer));
+				} else {
+					get(peer, "/addTask?task=" + UriUtils.encodeURI(e.getTask().toString()) + "&creator=" + e.getTask().getCreator());
+				}
 			} catch (IOException e1) {
 				bus.post(e1);
 			}
@@ -121,10 +141,13 @@ public class World  {
 	@Subscribe
 	public void peerDiscovered(PeerDiscovered e) {
 		try {
-			log.info("requesting peers from " + e.getPeer());
-			for (String l :get(e.getPeer(), "/peers").split("\n")){
-				int i = l.indexOf("=");
-				peers.put(User.named(l.substring(0,i)), Peer.of(l.substring(i+1)));
+			if (!peers.containsKey(e.getUser())) {
+				hello(e.getPeer());
+				log.info("requesting peers from " + e.getPeer());
+				for (String l :get(e.getPeer(), "/peers").split("\n")){
+					int i = l.indexOf("=");
+					peers.put(User.named(l.substring(0, i)), Peer.of(l.substring(i + 1)));
+				}
 			}
 		} catch (IOException e1) {
 			bus.post(e1);
@@ -135,7 +158,7 @@ public class World  {
 		@Override
 		public void handle(HttpExchange e) throws IOException {
 			log.info("handling hello");
-			Map<String,String> args = HttpUtil.argsOf(e);
+			Map<String,String> args = argsOf(e);
 			reply(e, "");
 			try {
 				User user = User.named(args.get("user").trim());

@@ -10,10 +10,10 @@ import static org.junit.Assert.assertEquals;
 /**
  * @author alexec (alex.e.c@gmail.com)
  */
-public class HttpUtilTest {
+public class HttpUtilsTest {
 	@Test
 	public void testArgsOf() throws Exception {
-		assertEquals(Collections.singletonMap("a", "1"), HttpUtil.argsOf("a=1"));
-		assertEquals(ImmutableMap.of("a","1","b","2"), HttpUtil.argsOf("a=1&b=2"));
+		assertEquals(Collections.singletonMap("a", "1"), HttpUtils.argsOf("a=1"));
+		assertEquals(ImmutableMap.of("a","1","b","2"), HttpUtils.argsOf("a=1&b=2"));
 	}
 }

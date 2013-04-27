@@ -1,14 +1,12 @@
 package com.alexecollins.taskalicious;
 
 import com.alexecollins.taskalicious.events.TaskAddedEvent;
+import com.alexecollins.taskalicious.events.TaskDiscovered;
 import com.alexecollins.taskalicious.events.TaskRemovedEvent;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Collections2;
 import com.google.common.eventbus.EventBus;
+import com.google.common.eventbus.Subscribe;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -24,23 +22,20 @@ public class Tasks {
 		bus.register(this);
 	}
 
-	public void addTask(Task task) {
-		tasks.add(task);
-		bus.post(new TaskAddedEvent(this, task));
-	}
-
-
-	public Collection<Task> findTasksByOwner(final User owner) {
-		return Collections2.filter(tasks, new Predicate<Task>() {
-			@Override
-			public boolean apply(@Nullable Task task) {
-				return task.getOwner().equals(owner);
-			}
-		});
+	public void add(Task task) {
+		if (tasks.add(task)) {
+			bus.post(new TaskAddedEvent(this, task));
+		}
 	}
 
 	public void remove(Task task) {
-		tasks.remove(task);
-		bus.post(new TaskRemovedEvent(this, task));
+		if (tasks.remove(task)) {
+			bus.post(new TaskRemovedEvent(this, task));
+		}
+	}
+
+	@Subscribe
+	public void taskDiscovered(TaskDiscovered e) {
+		add(e.getTask());
 	}
 }

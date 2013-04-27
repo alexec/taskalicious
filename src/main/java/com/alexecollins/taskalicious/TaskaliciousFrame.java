@@ -1,8 +1,6 @@
 package com.alexecollins.taskalicious;
 
-import com.alexecollins.taskalicious.events.PeerDiscovered;
-import com.alexecollins.taskalicious.events.TaskAddedEvent;
-import com.alexecollins.taskalicious.events.TaskRemovedEvent;
+import com.alexecollins.taskalicious.events.*;
 import com.google.common.eventbus.AsyncEventBus;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
@@ -79,11 +77,6 @@ public class TaskaliciousFrame extends JFrame {
 		TasksPanel() {
 			setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 
-			bus.register(this);
-			for (Task task : tasks.findTasksByOwner(user)) {
-				added(task);
-			}
-
 			final JTextField t = new JTextField("new task...");
 			t.setMaximumSize(new Dimension(330, 40));
 			t.addFocusListener(new FocusAdapter() {
@@ -105,7 +98,7 @@ public class TaskaliciousFrame extends JFrame {
 						case 10:
 							if (t.getText().length() > 0) {
 								try {
-									tasks.addTask(Task.of(user, "- " + t.getText()));
+									tasks.add(Task.of(bus, user, "- " + t.getText()));
 								} catch (Exception e) {
 									bus.post(e);
 								}
@@ -119,44 +112,52 @@ public class TaskaliciousFrame extends JFrame {
 				}
 			});
 			add(t);
-
+			bus.register(this);
 		}
+
 		@Subscribe
 		public void taskAdded(TaskAddedEvent e) {
-			added(e.getTask());
-		}
-
-		public void added(Task task) {
-			if (task.getOwner().equals(user)) {
-				TaskPanel p = new TaskPanel(task);
-				taskTaskPanelMap.put(task,p);
-				add(p, getComponentCount() - 1);
-				//add(Box.createRigidArea(new Dimension(1, 1)), getComponentCount() - 1);
-				revalidate();
-				// TODO JScrollBar vertical = scrollPane.getVerticalScrollBar();
-				// vertical.setValue(vertical.getMaximum());
-				repaint();
-			}
+			Task task = e.getTask();
+			final TaskPanel p = new TaskPanel(task);
+			taskTaskPanelMap.put(task,p);
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					add(p, getComponentCount() - 1);
+					//add(Box.createRigidArea(new Dimension(1, 1)), getComponentCount() - 1);
+					revalidate();
+					// TODO JScrollBar vertical = scrollPane.getVerticalScrollBar();
+					// vertical.setValue(vertical.getMaximum());
+					//repaint();
+				}
+			});
 		}
 
 		@Subscribe
 		public void taskRemoved(TaskRemovedEvent e) {
 			Task task = e.getTask();
 			if (taskTaskPanelMap.containsKey(task)) {
-				TaskPanel p = taskTaskPanelMap.remove(task);
-				p.getParent().remove(p);
-				revalidate();
-				repaint();
+				final TaskPanel p = taskTaskPanelMap.remove(task);
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						p.getParent().remove(p);
+						revalidate();
+						repaint();
+					}
+				});
 			}
 		}
 	}
 
-	private class TaskPanel extends JPanel implements Task.TaskListener {
+	private class TaskPanel extends JPanel  {
 		private final JCheckBox box = new JCheckBox();
 		private final JTextField text = new JTextField();
 		private final JLabel due = new JLabel();
+		private final Task task;
 
 		public TaskPanel(final Task task) {
+			this.task = task;
 			setLayout(new BorderLayout());
 			setName("taskPanel");
 			setMaximumSize(new Dimension(330, 40));
@@ -199,29 +200,35 @@ public class TaskaliciousFrame extends JFrame {
 							//down();
 							break;
 					}
-			}});
+				}
+			});
 			add(text);
 			add(due, BorderLayout.EAST);
-			update(task);
-			task.addListener(this);
+			bus.register(this);
+			fromTask() ;
 		}
 
-
-		@Override
-		public void update(Task task) {
-			if (task.getOwner().equals(user)) {
-				box.setSelected(task.getState() != Task.State.PENDING);
-				text.setText(task.getText());
-				if (task.getDue() != null) {
-					due.setText(TimeUtil.format(task.getDue()));
-				}
-				due.setVisible(task.getDue() != null);
-				due.setName(task.isOverdue() ? "overdue" : "due");
-			} else {
-				if (this.getParent() != null)
-					this.getParent().remove(this);
+		private void fromTask() {
+			box.setSelected(task.getState() != Task.State.PENDING);
+			text.setText(task.getText() + (!task.getOwner().equals(user) ? " - " + task.getOwner() :""));
+			if (task.getDue() != null) {
+				due.setText(TimeUtils.format(task.getDue()));
 			}
-			TaskaliciousFrame.this.repaint();
+			due.setVisible(task.getDue() != null);
+			due.setName(task.isOverdue() ? "overdue" : "due");
+		}
+
+		@Subscribe
+		public void taskChanged(final TaskChanged e) {
+			if (e.getTask().equals(task)) {
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						fromTask();
+						repaint();
+					}
+				});
+			}
 		}
 	}
 
@@ -266,6 +273,19 @@ public class TaskaliciousFrame extends JFrame {
 
 	@Subscribe
 	public void peerDiscovered(PeerDiscovered e) {
-		trayIcon.displayMessage("New peer", e.getUser().getName() + " discovered", TrayIcon.MessageType.INFO);
+		if (!e.getPeer().equals(me))
+			trayIcon.displayMessage("New peer", e.getUser().getName() + " discovered", TrayIcon.MessageType.INFO);
+	}
+
+	@Subscribe
+	public void taskDiscovered(TaskDiscovered e) {
+		if (e.getTask().getOwner().equals(user)) {
+			trayIcon.displayMessage("New task", e.getTask() + " discovered", TrayIcon.MessageType.INFO);
+		}
+	}
+
+	@Subscribe
+	public void peerUnavailable(PeerUnavailable e) {
+		trayIcon.displayMessage("Peer unavailable", e.getPeer() + " not available", TrayIcon.MessageType.WARNING);
 	}
 }

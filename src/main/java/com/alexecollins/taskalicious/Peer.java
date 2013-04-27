@@ -1,11 +1,14 @@
 package com.alexecollins.taskalicious;
 
+import lombok.Data;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 /**
  * @author alexec (alex.e.c@gmail.com)
  */
+@Data
 public class Peer {
 
 	private final String hostName;
@@ -39,13 +42,5 @@ public class Peer {
 	@Override
 	public String toString() {
 		return hostName + ":" + port;
-	}
-
-	public int getPort() {
-		return port;
-	}
-
-	public String getHostName() {
-		return hostName;
 	}
 }
