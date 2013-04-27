@@ -29,7 +29,6 @@ public class HttpUtil {
 			log.error("failed " + e, e);
 			throw e;
 		} finally {
-
 			con.disconnect();
 		}
 		log.info(" -> " + out.toString());

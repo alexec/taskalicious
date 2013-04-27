@@ -28,8 +28,6 @@ public class Peers extends AbstractMap<User,Peer> {
 		bus.post(new PeerAddedEvent(user,peer));
 		log.debug("added " + user + " -> " + peer);
 
-
-
 		return put;
 	}
 

@@ -4,6 +4,7 @@ import com.alexecollins.taskalicious.events.TaskAddedEvent;
 import com.alexecollins.taskalicious.events.TaskRemovedEvent;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -17,6 +18,7 @@ import java.util.Map;
 /**
  * @author alexec (alex.e.c@gmail.com)
  */
+@Slf4j
 public class TaskaliciousFrame extends JFrame {
 
 	private final EventBus bus = new EventBus();
@@ -30,8 +32,9 @@ public class TaskaliciousFrame extends JFrame {
 	}
 
 	private final World world = new World(peers, user,  bus);
+	private final TrayIcon trayIcon;
 
-	public TaskaliciousFrame() throws IOException {
+	public TaskaliciousFrame() throws IOException, AWTException {
 		setLayout(new BorderLayout());
 		setTitle("Taskalicious");
 		this.background = ImageIO.read(getClass().getResource("background.png"));
@@ -40,6 +43,11 @@ public class TaskaliciousFrame extends JFrame {
 		setMinimumSize(new Dimension(345, 519));
 		ContentPanel contentPanel = new ContentPanel();
 		add(contentPanel);
+		SystemTray tray = SystemTray.getSystemTray();
+		// load an image
+		trayIcon = new TrayIcon(Toolkit.getDefaultToolkit().createImage("trayIcon.png"), getTitle(), new PopupMenu());
+		tray.add(trayIcon);
+		bus.register(this);
 	}
 
 	public class ContentPanel extends JPanel {
@@ -239,5 +247,11 @@ public class TaskaliciousFrame extends JFrame {
 			add(b);
 
 		}
+	}
+
+	@Subscribe
+	public void exception(Exception e) {
+		log.error("uncaught", e);
+		trayIcon.displayMessage("Error", e.toString(), TrayIcon.MessageType.ERROR);
 	}
 }
