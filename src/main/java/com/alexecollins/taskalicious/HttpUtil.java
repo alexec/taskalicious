@@ -19,7 +19,7 @@ import java.util.regex.Pattern;
 @Slf4j
 public class HttpUtil {
 	public static String get(URI uri) throws IOException {
-		log.info("sayHello: " + uri);
+		log.info("requesting " + uri);
 		StringBuilder out = null;
 		HttpURLConnection con = (HttpURLConnection) uri.toURL().openConnection();
 		try {

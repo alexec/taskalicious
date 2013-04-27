@@ -3,6 +3,9 @@ package com.alexecollins.taskalicious;
 import com.alexecollins.taskalicious.events.PeerAddedEvent;
 import com.alexecollins.taskalicious.events.PeerDiscovered;
 import com.alexecollins.taskalicious.events.TaskAddedEvent;
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
+import com.google.common.collect.Collections2;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import com.sun.net.httpserver.HttpExchange;
@@ -10,7 +13,8 @@ import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -40,7 +44,20 @@ public class World  {
 		server.createContext("/whoAreYou", new HttpHandler() {
 			@Override
 			public void handle(HttpExchange e) throws IOException {
+				World.log.info("replying to who are you");
 				reply(e, me.getName());
+			}
+		});
+		server.createContext("/peers", new HttpHandler() {
+			@Override
+			public void handle(HttpExchange httpExchange) throws IOException {
+				World.log.info("informing client of peers");
+				reply(httpExchange, Joiner.on("\n").join(Collections2.transform(peers.entrySet(), new Function<Map.Entry<User, Peer>, String>() {
+					@Override
+					public String apply(Map.Entry<User, Peer> e) {
+						return e.getKey() + "=" + e.getValue();
+					}
+				})));
 			}
 		});
 		server.start();
@@ -101,15 +118,29 @@ public class World  {
 		}
 	}
 
+	@Subscribe
+	public void peerDiscovered(PeerDiscovered e) {
+		try {
+			log.info("requesting peers from " + e.getPeer());
+			for (String l :get(e.getPeer(), "/peers").split("\n")){
+				int i = l.indexOf("=");
+				peers.put(User.named(l.substring(0,i)), Peer.of(l.substring(i+1)));
+			}
+		} catch (IOException e1) {
+			bus.post(e1);
+		}
+	}
+
 	private class HelloHandler implements HttpHandler {
 		@Override
 		public void handle(HttpExchange e) throws IOException {
+			log.info("handling hello");
 			Map<String,String> args = HttpUtil.argsOf(e);
 			reply(e, "");
-			log.info("accepted " + args);
 			try {
 				User user = User.named(args.get("user").trim());
 				Peer peer = Peer.of(args.get("peer"));
+				log.info("hello from " + user);
 				if (peers.put(user, peer) == null) {
 					bus.post(new PeerDiscovered(user, peer));
 				}

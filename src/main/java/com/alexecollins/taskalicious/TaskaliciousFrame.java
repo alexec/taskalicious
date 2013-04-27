@@ -3,6 +3,7 @@ package com.alexecollins.taskalicious;
 import com.alexecollins.taskalicious.events.PeerDiscovered;
 import com.alexecollins.taskalicious.events.TaskAddedEvent;
 import com.alexecollins.taskalicious.events.TaskRemovedEvent;
+import com.google.common.eventbus.AsyncEventBus;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +16,7 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Executors;
 
 /**
  * @author alexec (alex.e.c@gmail.com)
@@ -22,7 +24,7 @@ import java.util.Map;
 @Slf4j
 public class TaskaliciousFrame extends JFrame {
 
-	private final EventBus bus = new EventBus();
+	private final EventBus bus = new AsyncEventBus(Executors.newSingleThreadExecutor());
 	private final Tasks tasks = new Tasks(bus);
 	private final Image background;
 	private final User user = User.named(System.getProperty("user", System.getProperty("user.name")));
