@@ -7,6 +7,8 @@ import java.awt.event.*;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author alexec (alex.e.c@gmail.com)
@@ -15,7 +17,7 @@ public class TaskaliciousFrame extends JFrame {
 
 	private final Repo repo = new Repo();
 	private final Image background;
-	private final String user = System.getProperty("user.name");
+	private final User user = User.named(System.getProperty("user.name"));
 
 	public TaskaliciousFrame() throws IOException {
 		setLayout(new BorderLayout());
@@ -34,7 +36,10 @@ public class TaskaliciousFrame extends JFrame {
 			setBackground(new Color(0, 0, 0, 0));
 			setOpaque(true);
 			setName("page");
-			add(new PagePanel());
+			JScrollPane scrollPane = new JScrollPane(new TasksPanel());
+			scrollPane.setBackground(new Color(0, 0, 0, 0));
+			scrollPane.setName("tasksPanel");
+			add(scrollPane);
 			add(new StatusBar(), BorderLayout.SOUTH);
 		}
 
@@ -42,31 +47,20 @@ public class TaskaliciousFrame extends JFrame {
 		protected void paintComponent(Graphics graphics) {
 			graphics.drawImage(background, 0, 0, null);
 		}
-
 	}
 
-	private class PagePanel extends JPanel implements Repo.RepoListener {
-		private final JPanel tasks = new JPanel();
-		private final JScrollPane scrollPane = new JScrollPane(tasks);
+	private class TasksPanel extends JPanel implements Repo.RepoListener {
+		final Map<Task,TaskPanel> taskTaskPanelMap = new HashMap<Task, TaskPanel>();
 
-		PagePanel() {
-			setLayout(new BorderLayout());
+		TasksPanel() {
+			setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 
-			tasks.setLayout(new BoxLayout(tasks, BoxLayout.PAGE_AXIS));
-
-			for (Task task : repo.getTasks()) {
+			for (Task task : repo.findTasksByOwner(user)) {
 				added(repo, task);
 			}
-			tasks.add(Box.createVerticalGlue());
-			scrollPane.setBackground(new Color(0, 0, 0, 0));
-			//scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-			scrollPane.setName("tasksPanel");
-			add(scrollPane);
 
-			final JPanel p = new JPanel();
-			p.setLayout(new BorderLayout());
 			final JTextField t = new JTextField("new task...");
-			t.setBackground(new Color(0, 0, 0, 0));
+			t.setMaximumSize(new Dimension(330, 40));
 			t.addFocusListener(new FocusAdapter() {
 				@Override
 				public void focusGained(FocusEvent focusEvent) {
@@ -79,38 +73,61 @@ public class TaskaliciousFrame extends JFrame {
 			t.addKeyListener(new KeyAdapter() {
 				@Override
 				public void keyReleased(KeyEvent keyEvent) {
-					if (keyEvent.getKeyCode() == 10) {
-						repo.addTask(Task.of(user, t.getText()));
-						t.setText("");
+					// 38 = up
+					// 40 = down
+					// 8 = delete
+					switch (keyEvent.getKeyCode()) {
+						case 10:
+							if (t.getText().length() > 0) {
+								repo.addTask(Task.of(user, t.getText()));
+								t.setText("");
+							}
+							break;
+						case 40:
+							//down();
+							break;
 					}
 				}
 			});
-			p.add(t, BorderLayout.SOUTH);
-			add(p, BorderLayout.SOUTH);
+			add(t);
 
 			repo.addListener(this);
 		}
 
 		@Override
 		public void added(Repo repo, Task task) {
-			tasks.add(new TaskPanel(task), tasks.getComponentCount() - 1);
-			tasks.add(Box.createRigidArea(new Dimension(1,1)), tasks.getComponentCount() - 1);
-			tasks.revalidate();
-			JScrollBar vertical = scrollPane.getVerticalScrollBar();
-			vertical.setValue(vertical.getMaximum());
-			repaint();
+			if (task.getOwner().equals(user)) {
+				TaskPanel p = new TaskPanel(task);
+				taskTaskPanelMap.put(task,p);
+				add(p, getComponentCount() - 1);
+				//add(Box.createRigidArea(new Dimension(1, 1)), getComponentCount() - 1);
+				revalidate();
+				// TODO JScrollBar vertical = scrollPane.getVerticalScrollBar();
+				// vertical.setValue(vertical.getMaximum());
+				repaint();
+			}
+		}
+
+		@Override
+		public void removed(Repo repo, Task task) {
+			if (taskTaskPanelMap.containsKey(task)) {
+				TaskPanel p = taskTaskPanelMap.remove(task);
+				p.getParent().remove(p);
+				revalidate();
+				repaint();
+			}
 		}
 	}
 
 	private class TaskPanel extends JPanel implements Task.TaskListener {
 		private final JCheckBox box = new JCheckBox();
-		private final JLabel text = new JLabel();
+		private final JTextField text = new JTextField();
 		private final JLabel due = new JLabel();
 
 		public TaskPanel(final Task task) {
 			setLayout(new BorderLayout());
 			setName("taskPanel");
-			setMaximumSize(new Dimension(330,40));
+			setMaximumSize(new Dimension(330, 40));
 			add(box, BorderLayout.WEST);
 			box.addActionListener(new ActionListener() {
 				@Override
@@ -118,21 +135,60 @@ public class TaskaliciousFrame extends JFrame {
 					task.setState(box.isSelected() ? Task.State.COMPLETE : Task.State.PENDING);
 				}
 			});
+			text.setName("task");
+			text.addFocusListener(new FocusAdapter() {
+				@Override
+				public void focusGained(FocusEvent focusEvent) {
+					text.setText(task.toString());
+				}
+
+				@Override
+				public void focusLost(FocusEvent focusEvent) {
+					task.fromString(text.getText());
+				}
+			});
+			text.addKeyListener(new KeyAdapter() {
+				@Override
+				public void keyReleased(KeyEvent keyEvent) {
+					// 38 = up
+					// 40 = down
+					// 8 = delete
+					switch (keyEvent.getKeyCode()) {
+						case 8:
+							if (text.getText().length() == 0) {
+								repo.remove(task);
+							}
+							break;
+						case 38:
+							//up();
+							break;
+						case 10:
+						case 40:
+							//down();
+							break;
+					}
+			}});
 			add(text);
 			add(due, BorderLayout.EAST);
 			update(task);
 			task.addListener(this);
 		}
 
+
 		@Override
 		public void update(Task task) {
-			box.setSelected(task.getState() != Task.State.PENDING);
-			text.setText(task.getText());
-			if (task.getDue() != null) {
-				due.setText(TimeUtil.format(task.getDue()));
+			if (task.getOwner().equals(user)) {
+				box.setSelected(task.getState() != Task.State.PENDING);
+				text.setText(task.getText());
+				if (task.getDue() != null) {
+					due.setText(TimeUtil.format(task.getDue()));
+				}
+				due.setVisible(task.getDue() != null);
+				due.setName(task.isOverdue() ? "overdue" : "due");
+			} else {
+				if (this.getParent() != null)
+					this.getParent().remove(this);
 			}
-			due.setVisible(task.getDue() != null);
-			due.setName(task.isOverdue() ? "overdue" : "due");
 			TaskaliciousFrame.this.repaint();
 		}
 	}
@@ -140,9 +196,13 @@ public class TaskaliciousFrame extends JFrame {
 	private class StatusBar extends JPanel {
 		private StatusBar() throws UnknownHostException {
 			setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
-			add(new JLabel(user));
+			JLabel l = new JLabel(user.getName());
+			l.setName("grey");
+			add(l);
 			add(Box.createHorizontalGlue());
-			add(new JLabel(InetAddress.getLocalHost().getHostName()));
+			JLabel l2 = new JLabel(InetAddress.getLocalHost().getHostName());
+			l2.setName("grey");
+			add(l2);
 		}
 	}
 }

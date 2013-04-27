@@ -11,6 +11,15 @@
     <object class="javax.swing.plaf.ColorUIResource" id="fglight"><int>127</int><int>127</int><int>127</int></object>
     <object class="javax.swing.plaf.ColorUIResource" id="fgoverdue"><int>255</int><int>63</int><int>63</int></object>
 
+    <object id="fnt" class="com.alexecollins.taskalicious.synth.CustomFontResource" method="createFont">
+        <string>HalleyveticaNBP.ttf</string>
+        <int>18</int>
+    </object>
+    <object id="fnt10" class="com.alexecollins.taskalicious.synth.CustomFontResource" method="createFont">
+        <string>HalleyveticaNBP.ttf</string>
+        <int>14</int>
+    </object>
+
     <!-- A custom painter allows us to finely control the look of components. -->
     <object id="painter" class="com.alexecollins.taskalicious.synth.CustomPainter"/>
 
@@ -18,7 +27,7 @@
     <style id="default">
         <opaque value="false"/>
         <!-- A handy list of fonts that you can use: http://www.ampsoft.net/webdesign-l/WindowsMacFonts.html -->
-        <font name="Book Antiqua" size="12"/>
+        <font idref="fnt"/>
         <state>
             <color type="FOREGROUND" idref="fg"/>
             <color type="TEXT_BACKGROUND" idref="bg"/>
@@ -27,6 +36,12 @@
         </state>
     </style>
     <bind style="default" type="region" key=".*"/>
+    <style id="grey">
+        <state>
+            <color type="FOREGROUND" idref="fglight"/>
+        </state>
+    </style>
+    <bind key="grey" style="grey" type="name"/>
 
     <style id="padding">
         <insets top="5" right="5" bottom="5" left="5"/>
@@ -172,7 +187,7 @@
     <bind style="title" type="name" key="title"/>
 
     <style id="page">
-        <font name="Book Antiqua" size="22"/>
+        <font idref="fnt10"/>
         <state>
             <color type="BACKGROUND" idref="bg"/>
         </state>
@@ -190,14 +205,14 @@
     <bind style="tasksPanel" type="name" key="tasksPanel"/>
 
     <style id="due">
-        <font name="Book Antiqua" size="9"/>
+        <font idref="fnt10"/>
         <state>
             <color type="FOREGROUND" idref="fglight"/>
         </state>
     </style>
     <bind style="due" type="name" key="due"/>
     <style id="overdue">
-        <font name="Book Antiqua" size="9"/>
+        <font idref="fnt10"/>
         <state>
             <color type="FOREGROUND" idref="fgoverdue"/>
         </state>

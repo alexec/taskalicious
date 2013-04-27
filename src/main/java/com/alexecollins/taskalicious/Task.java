@@ -11,47 +11,71 @@ import java.util.regex.Pattern;
  * @author alexec (alex.e.c@gmail.com)
  */
 public class Task {
+
 	public State getState() {
 		return state;
 	}
 
 	public void setState(State state) {
 		this.state = state;
+		fireChange();
+	}
+
+	private void fireChange() {
 		for (TaskListener listener:listeners) {
 			listener.update(this);
 		}
-
 	}
 
 	public Date getDue() {
 		return due;
 	}
 
+	public User getOwner() {
+		return owner;
+	}
+
 	public enum State {PENDING,COMPLETE,DECLINED}
 	private final Set<TaskListener> listeners = new CopyOnWriteArraySet<TaskListener>();
-	private final String creator;
+	private final User creator;
 	private State state = State.PENDING;
 	private Date due;
 	private String text;
+	private User owner;
 
-	Task(String creator, Date due, String text) {
+	Task(User creator, String s) {
+		if (creator == null) {throw new IllegalArgumentException("null creator");}
+		if (s == null) {throw new IllegalArgumentException("null s");}
 		this.creator = creator;
-		this.due = due;
-		this.text = text;
+		fromString(s);
 	}
 
-	public static Task of(String creator, String text) {
+	public static Task of(User creator, String s) {
+		return new Task(creator, s);
+	}
 
-		final Pattern p = Pattern.compile("(.*) (due|by|on) (.*)");
-		final Matcher m = p.matcher(text);
-		if (m.find()) {
-			final Date parse = TimeUtil.parse(m.group(3));
-			if (parse != null) {
-				return new Task(creator, parse, m.group(1));
+	public void fromString(String s) {
+		owner = creator;
+		{
+			final Pattern p = Pattern.compile("(.*) - (.*)");
+			final Matcher m = p.matcher(s);
+			if (m.find()) {
+				owner = User.named(m.group(2));
+				s = m.group(1);
 			}
 		}
-
-		return new Task(creator, null, text);
+		{
+			final Pattern p = Pattern.compile("(.*?) ((?:due|by|on)? .*)");
+			final Matcher m = p.matcher(s);
+			if (m.find()) {
+				due = TimeUtil.parse(m.group(2));
+				if (due != null) {
+					s = m.group(1);
+				}
+			}
+		}
+		text = s;
+		fireChange();
 	}
 
 	public String getText() {
@@ -64,7 +88,7 @@ public class Task {
 
 	@Override
 	public String toString() {
-		return text + (due != null ? (" (due " + due + ")") : "") + " created by " + creator;
+		return text + (due != null ? (" due " + TimeUtil.format(due)) : "");
 	}
 
 	public interface TaskListener {void update(Task task);}

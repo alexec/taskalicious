@@ -97,7 +97,20 @@ public class CustomPainter extends SynthPainter {
 
 	@Override
     public void paintTextFieldBackground(SynthContext context,Graphics g, int x, int y,int w, int h) {
-        paintBorder(context, g, x, y, w, h);
+
+		Graphics2D g2 = (Graphics2D)g;
+
+		final int arc = getArc(context);
+		final boolean isFocused = (context.getComponentState() & SynthConstants.FOCUSED) > 0;
+
+		g2.setColor(context.getStyle().getColor(context, ColorType.BACKGROUND));
+		g2.fillRoundRect(x + 1, y + 1, w - 3, h - 3, arc, arc);
+		g2.setColor(context.getStyle().getColor(context, ColorType.BACKGROUND));
+		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		g2.setColor(isFocused ? context.getStyle().getColor(context, ColorType.FOCUS) : context.getStyle().getColor(context, ColorType.FOREGROUND));
+		g2.setStroke(THIN_STROKE);
+		g2.drawLine(x + arc, y + h - 1, w - 1 - arc -arc, h - 1 );
+
     }
     
     @Override
