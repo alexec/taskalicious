@@ -98,7 +98,7 @@ public class TaskaliciousFrame extends JFrame {
 						case 10:
 							if (t.getText().length() > 0) {
 								try {
-									tasks.add(Task.of(bus, user, "- " + t.getText()));
+									tasks.add(Task.of("- " + t.getText() + (t.getText().matches(" - [^-]$") ? "" : " - " + user)));
 								} catch (Exception e) {
 									bus.post(e);
 								}
@@ -166,6 +166,7 @@ public class TaskaliciousFrame extends JFrame {
 				@Override
 				public void actionPerformed(ActionEvent actionEvent) {
 					task.setState(box.isSelected() ? Task.State.COMPLETE : Task.State.PENDING);
+					bus.post(new TaskChanged(task));
 				}
 			});
 			text.setName("task");
@@ -178,6 +179,7 @@ public class TaskaliciousFrame extends JFrame {
 				@Override
 				public void focusLost(FocusEvent focusEvent) {
 					task.fromString("- " + text.getText());
+					bus.post(new TaskChanged(task));
 				}
 			});
 			text.addKeyListener(new KeyAdapter() {

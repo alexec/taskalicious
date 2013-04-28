@@ -1,8 +1,6 @@
 package com.alexecollins.taskalicious;
 
 
-import com.alexecollins.taskalicious.events.TaskChanged;
-import com.google.common.eventbus.EventBus;
 import lombok.Data;
 
 import java.util.Date;
@@ -12,45 +10,26 @@ import java.util.regex.Pattern;
 /**
  * @author alexec (alex.e.c@gmail.com)
  */
+
 @Data
 public class Task {
 
-	public State getState() {
-		return state;
-	}
-
-	public void setState(State state) {
-		this.state = state;
-		fireChange();
-	}
-
-	private void fireChange() {
-		bus.post(new TaskChanged(this));
-	}
-
 	public enum State {PENDING,COMPLETE,DECLINED}
-	private final EventBus bus;
-	private final User creator;
 	private State state = State.PENDING;
 	private Date due;
 	private String text;
 	private User owner;
 
-	Task(EventBus bus, User creator, String s) {
-		if (bus == null) {throw new IllegalArgumentException("null bus");}
-		if (creator == null) {throw new IllegalArgumentException("null creator");}
-		this.bus = bus;
-		this.creator = creator;
+	Task(String s) {
 		fromString(s);
 	}
 
-	public static Task of(EventBus bus, User creator, String s) {
-		return new Task(bus, creator, s);
+	public static Task of(String s) {
+		return new Task(s);
 	}
 
 	public void fromString(String s) {
 		if (s == null) {throw new IllegalArgumentException("null string");}
-		owner = creator;
 		{
 			final Pattern p = Pattern.compile("([-x]) (.*)");
 			Matcher m = p.matcher(s);
@@ -63,10 +42,10 @@ public class Task {
 		{
 			final Pattern p = Pattern.compile("(.*) - (.*)");
 			final Matcher m = p.matcher(s);
-			if (m.find()) {
-				owner = User.named(m.group(2));
-				s = m.group(1);
-			}
+			if (!m.find()) {
+				throw new IllegalArgumentException(s + " invalid, must end with ' - owner'");}
+			owner = User.named(m.group(2));
+			s = m.group(1);
 		}
 		{
 			final Pattern p = Pattern.compile("(.*?) ((?:due|by|on|at|before)? .*)");
@@ -79,7 +58,6 @@ public class Task {
 			}
 		}
 		text = s;
-		fireChange();
 	}
 
 	public boolean isOverdue() {

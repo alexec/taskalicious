@@ -66,7 +66,7 @@ public class World  {
 				Map<String, String> args = argsOf(e);
 				World.log.info("discovered task " + args);
 				try {
-					bus.post(new TaskDiscovered(Task.of(bus, User.named(args.get("creator")), args.get("task"))));
+					bus.post(new TaskDiscovered(Task.of(args.get("task"))));
 				} catch (Exception e1) {
 					bus.post(e1);
 				}
@@ -130,7 +130,7 @@ public class World  {
 				if (peer == null) {
 					bus.post(new PeerUnavailable(peer));
 				} else {
-					get(peer, "/addTask?task=" + UriUtils.encodeURI(e.getTask().toString()) + "&creator=" + e.getTask().getCreator());
+					get(peer, "/addTask?task=" + UriUtils.encodeURI(e.getTask().toString()));
 				}
 			} catch (IOException e1) {
 				bus.post(e1);
