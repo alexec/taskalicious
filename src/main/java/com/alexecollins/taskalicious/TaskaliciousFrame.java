@@ -98,7 +98,7 @@ public class TaskaliciousFrame extends JFrame {
 						case 10:
 							if (t.getText().length() > 0) {
 								try {
-									tasks.add(Task.of("- " + t.getText() + (t.getText().matches(" - [^-]$") ? "" : " - " + user)));
+									tasks.add(Task.of("- " + t.getText() + (t.getText().matches(".* - [^-]*$") ? "" : " - " + user)));
 								} catch (Exception e) {
 									bus.post(e);
 								}

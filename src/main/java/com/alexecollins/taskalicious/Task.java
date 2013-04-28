@@ -31,7 +31,7 @@ public class Task {
 	public void fromString(String s) {
 		if (s == null) {throw new IllegalArgumentException("null string");}
 		{
-			final Pattern p = Pattern.compile("([-x]) (.*)");
+			final Pattern p = Pattern.compile("^([-x]) (.*)");
 			Matcher m = p.matcher(s);
 			if (!m.find()) {
 				throw new IllegalArgumentException(s + " invalid, must start with - or x");
@@ -40,7 +40,7 @@ public class Task {
 			s = m.group(2);
 		}
 		{
-			final Pattern p = Pattern.compile("(.*) - (.*)");
+			final Pattern p = Pattern.compile("(.*) - (.*)$");
 			final Matcher m = p.matcher(s);
 			if (!m.find()) {
 				throw new IllegalArgumentException(s + " invalid, must end with ' - owner'");}
@@ -58,6 +58,7 @@ public class Task {
 			}
 		}
 		text = s;
+		System.out.println(this);
 	}
 
 	public boolean isOverdue() {

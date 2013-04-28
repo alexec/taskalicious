@@ -123,6 +123,7 @@ public class World  {
 
 	@Subscribe
 	public void taskAdded(TaskAddedEvent e) {
+		log.info("taskAdded " + e);
 		if (!e.getTask().getOwner().equals(me)) {
 			try {
 				log.info("sending task to peer");
