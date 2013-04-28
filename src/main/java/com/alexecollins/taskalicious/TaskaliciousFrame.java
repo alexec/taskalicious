@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
@@ -22,7 +23,8 @@ import java.util.concurrent.Executors;
 @Slf4j
 public class TaskaliciousFrame extends JFrame {
 
-	private final EventBus bus = new AsyncEventBus(Executors.newSingleThreadExecutor());
+	private final ExecutorService executor = Executors.newFixedThreadPool(3);
+	private final EventBus bus = new AsyncEventBus(executor);
 	private final Tasks tasks = new Tasks(bus);
 	private final Image background;
 	private final User user = User.named(System.getProperty("user", System.getProperty("user.name")));
@@ -52,6 +54,7 @@ public class TaskaliciousFrame extends JFrame {
 		tasks.start();
 		peers.start();
 		world.start();
+		new PeerFinder(world, executor).start();
 	}
 
 	public class ContentPanel extends JPanel {

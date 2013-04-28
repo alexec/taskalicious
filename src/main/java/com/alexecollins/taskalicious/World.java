@@ -100,8 +100,8 @@ public class World  {
 		e.close();
 	}
 
-	private String hello(Peer peer) throws IOException {
-		return get(peer, "/hello?user=" + me + "&peer=" + Peer.me());
+	public void hello(Peer peer) throws IOException {
+		 get(peer, "/hello?user=" + me + "&peer=" + Peer.me());
 	}
 
 	private String get(Peer peer, String string) throws IOException {

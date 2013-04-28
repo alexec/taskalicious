@@ -32,7 +32,7 @@ public class HttpUtils {
 				out.append(l).append('\n');
 			}
 		} catch (IOException e) {
-			HttpUtils.log.error("failed " + e, e);
+			HttpUtils.log.error("failed " + e);
 			throw e;
 		} finally {
 			con.disconnect();
