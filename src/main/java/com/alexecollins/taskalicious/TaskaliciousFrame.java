@@ -249,7 +249,7 @@ public class TaskaliciousFrame extends JFrame {
 						@Override
 						public void run() {
 							try {
-								Peer p = Peer.of(JOptionPane.showInputDialog(TaskaliciousFrame.this, "Enter peer, e.g. 192.168.1.70", "localhost:10000"));
+								Peer p = Peer.of(JOptionPane.showInputDialog(TaskaliciousFrame.this, "Enter peer, e.g. 192.168.1.70", "localhost:" + (Peer.DEFAULTS_PORT + 1)));
 								peers.put(world.whoAreYou(p), p);
 							} catch (Exception e) {
 								JOptionPane.showMessageDialog(TaskaliciousFrame.this, "Failed to add peer: " + e, "Error", JOptionPane.ERROR_MESSAGE);
@@ -272,7 +272,7 @@ public class TaskaliciousFrame extends JFrame {
 	@Subscribe
 	public void peerDiscovered(PeerDiscovered e) {
 		if (!e.getPeer().equals(me))
-			trayIcon.displayMessage("New peer", e.getUser().getName() + " discovered", TrayIcon.MessageType.INFO);
+			trayIcon.displayMessage("New peer", e.getUser() + "@" + e.getPeer() + " discovered", TrayIcon.MessageType.INFO);
 	}
 
 	@Subscribe
