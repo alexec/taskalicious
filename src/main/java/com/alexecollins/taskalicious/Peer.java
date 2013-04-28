@@ -23,17 +23,15 @@ public class Peer {
 		}
 	}
 
+	public Peer(String s) {
+		this(s.contains(":") ? s.substring(0,s.indexOf(":")) : s,
+				s.contains(":") ? Integer.parseInt(s.substring(s.indexOf(":") + 1)) : DEFAULTS_PORT);
+	}
 	public Peer(String hostName, int port) {
-		if (hostName == null || hostName.contains(":")) {throw new IllegalArgumentException("hostName null or invalid");}
+		if (hostName == null || hostName.contains(":")) {throw new IllegalArgumentException("hostName " + hostName + " null or invalid");}
 		if (port < 0 || port > 65535) {throw new IllegalArgumentException("port out of range 0..65535");}
 		this.hostName = hostName;
 		this.port = port;
-	}
-	public static Peer of(String s) {
-		int i = s.indexOf(":");
-		return
-			i == -1 ? new Peer(s, DEFAULTS_PORT) :
-			new Peer(s.substring(0,i), Integer.parseInt(s.substring(i+1)));
 	}
 
 	public static Peer me() {

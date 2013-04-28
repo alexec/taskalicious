@@ -18,7 +18,7 @@ public abstract class CheckBoxIcon implements Icon {
     public void paintIcon(Component c, Graphics g, int x, int y) {
         CustomPainter.paintBox(g, x, y, getIconWidth(), getIconHeight(),
 		        CustomPainter.getArc(c),
-		        c.getForeground());
+		        c.getForeground(), c.getBackground());
     }
 
     @Override

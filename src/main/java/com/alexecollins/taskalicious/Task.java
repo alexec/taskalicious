@@ -20,12 +20,8 @@ public class Task {
 	private String text;
 	private User owner;
 
-	Task(String s) {
+	public Task(String s) {
 		fromString(s);
-	}
-
-	public static Task of(String s) {
-		return new Task(s);
 	}
 
 	public void fromString(String s) {
@@ -58,7 +54,6 @@ public class Task {
 			}
 		}
 		text = s;
-		System.out.println(this);
 	}
 
 	public boolean isOverdue() {

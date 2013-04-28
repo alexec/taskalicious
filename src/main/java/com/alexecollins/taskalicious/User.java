@@ -10,7 +10,7 @@ public class User {
 	private final String name;
 
 	public User(String name) {
-		if (name == null || !name.trim().equals(name)) {throw new IllegalArgumentException("name null or trailing whitespace");}
+		if (name == null || name.length()==0 ||!name.trim().equals(name)) {throw new IllegalArgumentException("name null or trailing whitespace");}
 		this.name = name;
 	}
 

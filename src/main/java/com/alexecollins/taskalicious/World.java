@@ -66,7 +66,7 @@ public class World  {
 				Map<String, String> args = argsOf(e);
 				World.log.info("discovered task " + args);
 				try {
-					bus.post(new TaskDiscovered(Task.of(args.get("task"))));
+					bus.post(new TaskDiscovered(new Task(args.get("task"))));
 				} catch (Exception e1) {
 					bus.post(e1);
 				}
@@ -147,7 +147,7 @@ public class World  {
 				log.info("requesting peers from " + e.getPeer());
 				for (String l :get(e.getPeer(), "/peers").split("\n")){
 					int i = l.indexOf("=");
-					peers.put(User.named(l.substring(0, i)), Peer.of(l.substring(i + 1)));
+					peers.put(User.named(l.substring(0, i)), new Peer(l.substring(i + 1)));
 				}
 			}
 		} catch (IOException e1) {
@@ -163,7 +163,7 @@ public class World  {
 			reply(e, "");
 			try {
 				User user = User.named(args.get("user").trim());
-				Peer peer = Peer.of(args.get("peer"));
+				Peer peer = new Peer(args.get("peer"));
 				log.info("hello from " + user);
 				if (peers.put(user, peer) == null) {
 					bus.post(new PeerDiscovered(user, peer));

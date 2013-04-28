@@ -49,6 +49,8 @@ public class TaskaliciousFrame extends JFrame {
 		trayIcon = new TrayIcon(Toolkit.getDefaultToolkit().createImage("trayIcon.png"), getTitle(), new PopupMenu());
 		tray.add(trayIcon);
 		bus.register(this);
+		tasks.start();
+		peers.start();
 		world.start();
 	}
 
@@ -98,7 +100,8 @@ public class TaskaliciousFrame extends JFrame {
 						case 10:
 							if (t.getText().length() > 0) {
 								try {
-									tasks.add(Task.of("- " + t.getText() + (t.getText().matches(".* - [^-]*$") ? "" : " - " + user)));
+									String s = "- " + t.getText() + (t.getText().matches(".* - [^-]*$") ? "" : " - " + user);
+									tasks.add(new Task(s));
 								} catch (Exception e) {
 									bus.post(e);
 								}
@@ -249,7 +252,7 @@ public class TaskaliciousFrame extends JFrame {
 						@Override
 						public void run() {
 							try {
-								Peer p = Peer.of(JOptionPane.showInputDialog(TaskaliciousFrame.this, "Enter peer, e.g. 192.168.1.70", "localhost:" + (Peer.DEFAULTS_PORT + 1)));
+								Peer p = new Peer(JOptionPane.showInputDialog(TaskaliciousFrame.this, "Enter peer, e.g. 192.168.1.70", "localhost:" + (Peer.DEFAULTS_PORT + 1)));
 								peers.put(world.whoAreYou(p), p);
 							} catch (Exception e) {
 								JOptionPane.showMessageDialog(TaskaliciousFrame.this, "Failed to add peer: " + e, "Error", JOptionPane.ERROR_MESSAGE);

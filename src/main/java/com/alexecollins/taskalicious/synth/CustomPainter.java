@@ -48,8 +48,10 @@ public class CustomPainter extends SynthPainter {
 	    g2.drawRoundRect(x, y, w - 1, h - 1, arc, arc);
     }
 
-	public static void paintBox(Graphics g, int x, int y, int w, int h, int arc, Color fg) {
+	public static void paintBox(Graphics g, int x, int y, int w, int h, int arc, Color fg, Color bg) {
 		Graphics2D g2 = (Graphics2D)g;
+		g2.setPaint(bg);
+		g2.fillRect(x, y, w - 1, h - 1);
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		g2.setColor(fg);
 		g2.setStroke(THIN_STROKE);
