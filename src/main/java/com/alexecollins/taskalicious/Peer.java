@@ -11,10 +11,10 @@ import java.net.UnknownHostException;
 @Data
 public class Peer {
 
-	private final String hostName;
-	private final int port;
 	public static final int DEFAULTS_PORT = 17857;
 	private static final Peer ME;
+	private final String hostName;
+	private final int port;
 	static {
 		try {
 			ME = new Peer(InetAddress.getLocalHost().getHostName(), Integer.parseInt(System.getProperty("port", String.valueOf(DEFAULTS_PORT))));
@@ -31,8 +31,9 @@ public class Peer {
 	}
 	public static Peer of(String s) {
 		int i = s.indexOf(":");
-		if (i == -1) {throw new IllegalArgumentException("string must contain colon, e.g. 192.168.0.1:17857");}
-		return new Peer(s.substring(0,i), Integer.parseInt(s.substring(i+1)));
+		return
+			i == -1 ? new Peer(s, DEFAULTS_PORT) :
+			new Peer(s.substring(0,i), Integer.parseInt(s.substring(i+1)));
 	}
 
 	public static Peer me() {
@@ -41,6 +42,6 @@ public class Peer {
 
 	@Override
 	public String toString() {
-		return hostName + ":" + port;
+		return hostName+ (port != DEFAULTS_PORT ?  ":" + port : "")          ;
 	}
 }

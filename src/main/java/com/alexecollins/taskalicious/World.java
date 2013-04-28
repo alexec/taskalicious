@@ -45,7 +45,7 @@ public class World  {
 			@Override
 			public void handle(HttpExchange e) throws IOException {
 				World.log.info("replying to who are you");
-				reply(e, me.getName());
+				reply(e, me.getName() + '\n' + Peer.me());
 			}
 		});
 		server.createContext("/peers", new HttpHandler() {
@@ -118,7 +118,7 @@ public class World  {
 	}
 
 	public User whoAreYou(Peer p) throws IOException {
-		return User.named(get(p, "/whoAreYou").trim());
+		return User.named(get(p, "/whoAreYou").split("\n")[0]);
 	}
 
 	@Subscribe

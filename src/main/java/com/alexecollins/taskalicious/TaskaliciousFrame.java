@@ -237,13 +237,10 @@ public class TaskaliciousFrame extends JFrame {
 	private class StatusBar extends JPanel {
 		private StatusBar() throws UnknownHostException {
 			setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
-			JLabel l = new JLabel(user.getName());
+			JLabel l = new JLabel(user+ "@" + me);
 			l.setName("grey");
 			add(l);
 			add(Box.createHorizontalGlue());
-			JLabel l2 = new JLabel(me.toString());
-			l2.setName("grey");
-			add(l2);
 			JButton b = new JButton("+");
 			b.addActionListener(new ActionListener() {
 				@Override
@@ -252,10 +249,9 @@ public class TaskaliciousFrame extends JFrame {
 						@Override
 						public void run() {
 							try {
-								Peer p = Peer.of(JOptionPane.showInputDialog(TaskaliciousFrame.this, "Enter peer, e.g. 192.168.1.70:" + Peer.DEFAULTS_PORT, "localhost:10000"));
+								Peer p = Peer.of(JOptionPane.showInputDialog(TaskaliciousFrame.this, "Enter peer, e.g. 192.168.1.70", "localhost:10000"));
 								peers.put(world.whoAreYou(p), p);
 							} catch (Exception e) {
-								TaskaliciousFrame.log.error("ops", e);
 								JOptionPane.showMessageDialog(TaskaliciousFrame.this, "Failed to add peer: " + e, "Error", JOptionPane.ERROR_MESSAGE);
 							}
 						}
